@@ -7,24 +7,48 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 </head>
 <body>
   <div class="container">
-    <h1>MKF Nutrition</h1>
-    <p>Enter what you usually eat in a day:</p>
-    <textarea id="dietInput" rows="8" placeholder="Breakfast: ...&#10;Lunch: ..."></textarea>
-    <button onclick="analyzeDiet()">Analyze Gut Health</button>
+    <header>
+      <h1>MKF Nutrition</h1>
+      <p class="muted">Analyze your gut health based on your daily eating habits</p>
+    </header>
 
-    <div id="result" class="hidden">
-      <h2>Your Gut Health Score:</h2>
-      <p id="score"></p>
-      <h3>Analysis:</h3>
-      <p id="analysis"></p>
-      <h3>Recommendations:</h3>
-      <ul id="recommendations"></ul>
+    <div class="card">
+      <div class="field">
+        <label class="field-title">Describe what you usually eat in a day:</label>
+        <textarea id="dietInput" rows="8" placeholder="Example:
+Breakfast: eggs, toast, coffee
+Lunch: burger and fries
+Dinner: pasta and soda
+Snacks: chips"></textarea>
+      </div>
+
+      <div class="upload">
+        <button onclick="analyzeDiet()">Analyze Gut Health</button>
+      </div>
     </div>
+
+    <div id="resultCard" class="card hidden">
+      <div class="field-title">Results</div>
+      <div class="result-row">
+        <div class="result-name">Gut Health Score</div>
+        <div id="score" class="result-val"></div>
+      </div>
+      <div class="result-row">
+        <div class="result-name">Analysis</div>
+        <div id="analysis" class="result-val"></div>
+      </div>
+      <div class="result-row">
+        <div class="result-name">Recommendations</div>
+        <div id="recommendations" class="result-val"></div>
+      </div>
+    </div>
+
+    <p class="disclaimer">Property of MKF Innovations®</p>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>
