@@ -1,53 +1,94 @@
-// Firebase setup (replace with your config)
+// === Firebase (optional, for hosting only) ===
 const firebaseConfig = {
   apiKey: "AIzaSyDOoxjTVtST82ebt18MlrXMor0BPE2mQkY",
   authDomain: "mkf-biomatch.firebaseapp.com",
   projectId: "mkf-biomatch",
 };
-
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 
-function analyzeDiet() {
-  const input = document.getElementById('dietInput').value.toLowerCase();
-  if (!input.trim()) return alert("Please enter your daily diet.");
+// === TensorFlow.js Model ===
+async function trainModel() {
+  // Example training data (keywords mapped to healthy or unhealthy patterns)
+  const samples = [
+    { text: "yogurt vegetables fruits fiber water", score: 90 },
+    { text: "burger fries soda pizza chips", score: 20 },
+    { text: "chicken rice salad olive oil", score: 80 },
+    { text: "red meat alcohol sugar candy", score: 35 },
+    { text: "fish brown rice avocado nuts water", score: 85 },
+    { text: "fried food soda fast food", score: 25 },
+    { text: "smoothie oats fruit vegetables", score: 95 },
+    { text: "ice cream pasta white bread", score: 40 }
+  ];
 
-  let score = 50;
-  let positive = 0, negative = 0;
+  // Convert text into word frequency vectors
+  const vocab = Array.from(new Set(samples.flatMap(s => s.text.split(" "))));
+  const wordIndex = {};
+  vocab.forEach((w, i) => (wordIndex[w] = i));
 
-  const goodFoods = ["yogurt", "vegetable", "fruit", "fiber", "water", "nuts", "fish", "chicken", "olive oil", "avocado", "kimchi", "kefir"];
-  const badFoods = ["soda", "burger", "fries", "sugar", "chips", "pizza", "candy", "fried", "alcohol", "red meat"];
+  const xs = tf.tensor2d(samples.map(s => textToVector(s.text, wordIndex)));
+  const ys = tf.tensor2d(samples.map(s => [s.score / 100]));
 
-  goodFoods.forEach(food => { if (input.includes(food)) score += 5; positive++; });
-  badFoods.forEach(food => { if (input.includes(food)) score -= 5; negative++; });
+  // Small neural net
+  const model = tf.sequential();
+  model.add(tf.layers.dense({ inputShape: [vocab.length], units: 16, activation: "relu" }));
+  model.add(tf.layers.dense({ units: 8, activation: "relu" }));
+  model.add(tf.layers.dense({ units: 1, activation: "sigmoid" }));
 
-  if (score > 100) score = 100;
-  if (score < 0) score = 0;
+  model.compile({ optimizer: "adam", loss: "meanSquaredError" });
 
-  document.getElementById('result').classList.remove('hidden');
-  document.getElementById('score').innerText = `${score}/100`;
+  await model.fit(xs, ys, { epochs: 60, shuffle: true });
+  return { model, wordIndex };
+}
 
-  let analysis = score > 70
-    ? "Your gut microbiome balance seems healthy. Keep it up!"
-    : score > 40
-    ? "Moderate gut health. Try balancing your meals with more fiber and probiotic foods."
-    : "Your gut health may be poor due to low diversity and high processed foods.";
+function textToVector(text, wordIndex) {
+  const vec = Array(Object.keys(wordIndex).length).fill(0);
+  text.split(" ").forEach(w => {
+    if (wordIndex[w] !== undefined) vec[wordIndex[w]] = 1;
+  });
+  return vec;
+}
 
-  document.getElementById('analysis').innerText = analysis;
+// === Analysis ===
+async function analyzeDiet() {
+  const input = document.getElementById('dietInput').value.toLowerCase().trim();
+  if (!input) return alert("Please describe your daily eating routine.");
+
+  // Load TensorFlow
+  if (!window.tf) {
+    alert("TensorFlow.js is loading, please try again in a few seconds.");
+    return;
+  }
+
+  // Train lightweight model
+  const { model, wordIndex } = await trainModel();
+
+  // Predict score
+  const inputVector = tf.tensor2d([textToVector(input, wordIndex)]);
+  const prediction = model.predict(inputVector);
+  const rawScore = (await prediction.data())[0];
+  const score = Math.round(rawScore * 100);
+
+  // Interpret results
+  let analysis = "";
+  if (score >= 75) analysis = "Excellent microbiome balance. Your diet promotes healthy gut flora!";
+  else if (score >= 50) analysis = "Moderate gut health. Try including more fiber and probiotic foods.";
+  else analysis = "Low gut health potential due to processed or sugary foods.";
 
   const recs = [];
-  if (score < 70) recs.push("Add probiotic foods like yogurt or kimchi.");
-  if (!input.includes("water")) recs.push("Increase water intake.");
-  if (!input.includes("fruit")) recs.push("Eat more fruits and vegetables.");
-  if (input.includes("fried")) recs.push("Reduce fried food consumption.");
+  if (score < 75) recs.push("Add fermented foods like yogurt, kimchi, or kefir.");
+  if (!input.includes("water")) recs.push("Drink more water daily for digestion.");
+  if (!input.includes("fruit") && !input.includes("vegetable")) recs.push("Eat more fruits and vegetables.");
+  if (input.includes("fried") || input.includes("soda")) recs.push("Reduce fried and sugary items.");
 
-  const recList = document.getElementById('recommendations');
-  recList.innerHTML = recs.map(r => `<li>${r}</li>`).join('');
+  // Display results
+  document.getElementById('resultCard').classList.remove('hidden');
+  document.getElementById('score').innerHTML =
+    `<span class='result-flag flag-${score >= 75 ? "normal" : score >= 50 ? "low" : "high"}'>${score}/100</span>`;
+  document.getElementById('analysis').textContent = analysis;
+  document.getElementById('recommendations').innerHTML = recs.length
+    ? recs.map(r => `• ${r}`).join("<br>")
+    : "Keep your current routine — it's balanced!";
 
-  // Save minimal data
-  db.collection("gutReports").add({
-    diet: input,
-    score: score,
-    timestamp: new Date()
-  });
+  // Clean up tensors
+  tf.dispose([prediction, inputVector]);
 }
