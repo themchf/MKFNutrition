@@ -17,14 +17,9 @@ body{
 .container{max-width:980px;margin:24px auto;padding:18px;}
 header h1{margin:0;color:var(--accent);font-size:28px}
 .muted{color:var(--muted);margin-bottom:12px;font-size:14px}
-.card{
-  background:var(--card);
-  padding:14px;
-  border-radius:10px;
-  box-shadow:0 6px 30px rgba(0,0,0,0.6);
-  margin-top:12px;
-  opacity:0;
-  transform: translateY(10px);
+#resultCard.show {
+  opacity:1;
+  transform: translateY(0);
   transition: all 0.5s ease;
 }
 .card.show{
@@ -70,3 +65,4 @@ button:active{transform:translateY(1px);}
 }
 @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
 @keyframes pulse{0%,100%{opacity:0.4;}50%{opacity:1;}}
+
