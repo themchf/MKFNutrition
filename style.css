@@ -1,17 +1,38 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f5f3;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDOoxjTVtST82ebt18MlrXMor0BPE2mQkY",
-  authDomain: "mkf-biomatch.firebaseapp.com",
-  projectId: "mkf-biomatch",
-  storageBucket: "mkf-biomatch.firebasestorage.app",
-  messagingSenderId: "495990171751",
-  appId: "1:495990171751:web:914469adc53d68ff588cc2"
-};
+.container {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  width: 400px;
+  text-align: center;
+}
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin-top: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.hidden { display: none; }
