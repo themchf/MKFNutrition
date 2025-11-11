@@ -52,6 +52,9 @@ function textToVector(text, wordIndex) {
 async function analyzeDiet() {
   const input = document.getElementById('dietInput').value.toLowerCase().trim();
   if (!input) return alert("Please describe your daily eating routine.");
+  // Show loader, hide previous result
+  document.getElementById('loader').classList.remove('hidden');
+  document.getElementById('resultCard').classList.add('hidden');
 
   // Load TensorFlow
   if (!window.tf) {
@@ -67,6 +70,8 @@ async function analyzeDiet() {
   const prediction = model.predict(inputVector);
   const rawScore = (await prediction.data())[0];
   const score = Math.round(rawScore * 100);
+  // Hide loader when done
+  document.getElementById('loader').classList.add('hidden');
 
   // Interpret results
   let analysis = "";
@@ -92,3 +97,4 @@ async function analyzeDiet() {
   // Clean up tensors
   tf.dispose([prediction, inputVector]);
 }
+
