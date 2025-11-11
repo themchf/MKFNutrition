@@ -1,70 +1,53 @@
-const form = document.getElementById("bioForm");
-const output = document.getElementById("output");
+// Firebase setup (replace with your config)
+const firebaseConfig = {
+  apiKey: "AIzaSyDOoxjTVtST82ebt18MlrXMor0BPE2mQkY",
+  authDomain: "mkf-biomatch.firebaseapp.com",
+  projectId: "mkf-biomatch",
+};
 
-// Load last session (if exists)
-window.addEventListener("load", () => {
-  const saved = localStorage.getItem("biomatch_last");
-  if (saved) {
-    const data = JSON.parse(saved);
-    document.getElementById("diet").value = data.diet;
-    document.getElementById("lifestyle").value = data.lifestyle;
-    document.getElementById("sleep").value = data.sleep;
-    document.getElementById("goal").value = data.goal;
-  }
-});
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-// Simple AI model (TensorFlow.js)
-async function analyzeGutHealth(inputs) {
-  const model = tf.sequential();
-  model.add(tf.layers.dense({ inputShape: [3], units: 5, activation: "relu" }));
-  model.add(tf.layers.dense({ units: 1, activation: "sigmoid" }));
-  model.compile({ optimizer: "adam", loss: "meanSquaredError" });
+function analyzeDiet() {
+  const input = document.getElementById('dietInput').value.toLowerCase();
+  if (!input.trim()) return alert("Please enter your daily diet.");
 
-  const xs = tf.tensor2d([[0,0,6],[1,1,7],[2,2,8],[1,0,5]]);
-  const ys = tf.tensor2d([[0.3],[0.8],[0.9],[0.5]]);
-  await model.fit(xs, ys, { epochs: 15 });
+  let score = 50;
+  let positive = 0, negative = 0;
 
-  const prediction = model.predict(tf.tensor2d([inputs], [1,3]));
-  const score = (await prediction.data())[0];
-  return score;
+  const goodFoods = ["yogurt", "vegetable", "fruit", "fiber", "water", "nuts", "fish", "chicken", "olive oil", "avocado", "kimchi", "kefir"];
+  const badFoods = ["soda", "burger", "fries", "sugar", "chips", "pizza", "candy", "fried", "alcohol", "red meat"];
+
+  goodFoods.forEach(food => { if (input.includes(food)) score += 5; positive++; });
+  badFoods.forEach(food => { if (input.includes(food)) score -= 5; negative++; });
+
+  if (score > 100) score = 100;
+  if (score < 0) score = 0;
+
+  document.getElementById('result').classList.remove('hidden');
+  document.getElementById('score').innerText = `${score}/100`;
+
+  let analysis = score > 70
+    ? "Your gut microbiome balance seems healthy. Keep it up!"
+    : score > 40
+    ? "Moderate gut health. Try balancing your meals with more fiber and probiotic foods."
+    : "Your gut health may be poor due to low diversity and high processed foods.";
+
+  document.getElementById('analysis').innerText = analysis;
+
+  const recs = [];
+  if (score < 70) recs.push("Add probiotic foods like yogurt or kimchi.");
+  if (!input.includes("water")) recs.push("Increase water intake.");
+  if (!input.includes("fruit")) recs.push("Eat more fruits and vegetables.");
+  if (input.includes("fried")) recs.push("Reduce fried food consumption.");
+
+  const recList = document.getElementById('recommendations');
+  recList.innerHTML = recs.map(r => `<li>${r}</li>`).join('');
+
+  // Save minimal data
+  db.collection("gutReports").add({
+    diet: input,
+    score: score,
+    timestamp: new Date()
+  });
 }
-
-// Recommend based on score
-function getRecommendations(score, goal) {
-  const foods = {
-    mood: ["Dark chocolate 🍫", "Bananas 🍌", "Fermented yogurt 🥛", "Nuts 🥜"],
-    immunity: ["Garlic 🧄", "Ginger 🫚", "Kefir 🥤", "Sauerkraut 🥬"],
-    digestion: ["Kimchi 🥬", "Oats 🌾", "Kombucha 🍹", "Leafy greens 🥦"]
-  };
-
-  if (score > 0.75) return `✅ Excellent gut health! Maintain with: ${foods[goal].join(", ")}.`;
-  if (score > 0.45) return `⚠️ Fair gut balance. Add more of: ${foods[goal].join(", ")}.`;
-  return `🚨 Gut imbalance detected. Prioritize: ${foods[goal].join(", ")} daily.`;
-}
-
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const diet = document.getElementById("diet").value;
-  const lifestyle = document.getElementById("lifestyle").value;
-  const sleep = parseFloat(document.getElementById("sleep").value);
-  const goal = document.getElementById("goal").value;
-
-  // Convert to numerical values
-  const dietNum = diet === "vegan" ? 0 : diet === "vegetarian" ? 1 : 2;
-  const lifeNum = lifestyle === "sedentary" ? 0 : lifestyle === "moderate" ? 1 : 2;
-
-  output.classList.remove("hidden");
-  output.innerHTML = "<p>🔄 Analyzing your gut health...</p>";
-
-  const score = await analyzeGutHealth([dietNum, lifeNum, sleep]);
-  const result = getRecommendations(score, goal);
-
-  output.innerHTML = `
-    <h3>Your Gut Health Score: ${(score * 100).toFixed(1)}%</h3>
-    <p>${result}</p>
-  `;
-
-  // Save session locally
-  localStorage.setItem("biomatch_last", JSON.stringify({ diet, lifestyle, sleep, goal }));
-});
