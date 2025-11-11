@@ -1,20 +1,48 @@
 :root{
-  --bg:#070707; --card:#0f1112; --accent:#ff0066; --cyan:#00ffd1; --muted:#9aa2a6; --text:#e6eef0;
+  --bg:#070707; 
+  --card:#0f1112; 
+  --accent:#ff0066; 
+  --cyan:#00ffd1; 
+  --muted:#9aa2a6; 
+  --text:#e6eef0;
 }
+
 *{box-sizing:border-box;}
-body{margin:0;font-family:Inter, system-ui, Roboto, Arial;background:linear-gradient(#020202,var(--bg));color:var(--text);}
+body{
+  margin:0;
+  font-family:Inter, system-ui, Roboto, Arial;
+  background:linear-gradient(#020202,var(--bg));
+  color:var(--text);
+}
 .container{max-width:980px;margin:24px auto;padding:18px;}
 header h1{margin:0;color:var(--accent);font-size:28px}
 .muted{color:var(--muted);margin-bottom:12px;font-size:14px}
-.card{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 6px 30px rgba(0,0,0,0.6);margin-top:12px;}
+.card{
+  background:var(--card);
+  padding:14px;
+  border-radius:10px;
+  box-shadow:0 6px 30px rgba(0,0,0,0.6);
+  margin-top:12px;
+  opacity:0;
+  transform: translateY(10px);
+  transition: all 0.5s ease;
+}
+.card.show{
+  opacity:1;
+  transform: translateY(0);
+}
 .upload{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-top:12px;}
 .field{display:flex;flex-direction:column;gap:6px;}
-textarea{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:#071017;color:var(--text);width:100%;resize:none;}
-.inline-fields{display:flex;gap:10px;align-items:center;}
-.inline-fields label{display:flex;flex-direction:column;color:var(--muted);font-size:13px;}
-input[type=number],select{padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);background:#071017;color:var(--text);}
-input[type=text]{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:#071017;color:var(--text);width:100%}
-button{background:linear-gradient(180deg,var(--accent),#ff2a8a);color:white;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:600;}
+textarea{
+  padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);
+  background:#071017;color:var(--text);width:100%;resize:none;
+}
+input[type=number],select,input[type=text]{padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);background:#071017;color:var(--text);}
+button{
+  background:linear-gradient(180deg,var(--accent),#ff2a8a);
+  color:white;border:none;padding:10px 16px;border-radius:8px;
+  cursor:pointer;font-weight:600;
+}
 button:active{transform:translateY(1px);}
 .hidden{display:none;}
 .result-row{display:flex;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px dashed rgba(255,255,255,0.03);}
@@ -25,32 +53,20 @@ button:active{transform:translateY(1px);}
 .flag-high{background:#4a1b1b;color:#ffb7b7;}
 .flag-normal{background:#0b2d18;color:#9effb5;}
 .disclaimer{margin-top:18px;color:var(--muted);font-size:13px;}
-.field-title{font-weight:800;margin-bottom:8px;color:var(--cyan)}
-.small-muted{color:var(--muted);font-size:13px}
-.history-item{padding:8px;border-radius:8px;margin-bottom:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));display:flex;justify-content:space-between;align-items:center}
-/* Loader Styling */
-#loader {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 16px;
-  color: #333;
-}
+.field-title{font-weight:800;margin-bottom:8px;color:var(--cyan);}
+.small-muted{color:var(--muted);font-size:13px;}
 
-.loader {
-  border: 6px solid #f3f3f3;
-  border-top: 6px solid #4CAF50;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  margin: 0 auto 10px auto;
-  animation: spin 1s linear infinite;
+/* Loader */
+#loader{text-align:center;margin-top:20px;}
+#loader p{margin-top:8px;color:var(--muted);font-size:14px;animation:pulse 1.2s infinite;}
+.loader{
+  border:6px solid rgba(255,255,255,0.1);
+  border-top:6px solid var(--accent);
+  border-radius:50%;
+  width:50px;
+  height:50px;
+  margin:0 auto;
+  animation:spin 1s linear infinite;
 }
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.hidden {
-  display: none;
-}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+@keyframes pulse{0%,100%{opacity:0.4;}50%{opacity:1;}}
