@@ -63,6 +63,53 @@ button:active{transform:translateY(1px);}
   margin:0 auto;
   animation:spin 1s linear infinite;
 }
+/* === FIX: Improve textarea and input visibility === */
+textarea,
+input[type=text],
+input[type=number],
+select {
+  background: #0c0f10; /* slightly lighter than card */
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-size: 15px;
+  line-height: 1.4;
+  caret-color: var(--accent); /* visible typing cursor */
+}
+
+textarea::placeholder,
+input::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+/* === Button visibility enhancement === */
+button {
+  background: linear-gradient(180deg, var(--accent), #ff2a8a);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 12px rgba(255, 0, 102, 0.3);
+}
+
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* === Optional: Make text inside result card readable === */
+#resultCard {
+  color: var(--text);
+}
+
 @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
 @keyframes pulse{0%,100%{opacity:0.4;}50%{opacity:1;}}
+
 
